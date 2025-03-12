@@ -25,7 +25,7 @@ for i in range(3):
 
 print("Connected to Wi-Fi:", wifi.ifconfig())
 
-HOST = "192.168.244.50"
+HOST = "esp-32-socket.onrender.com"
 PORT = 8080
 
 current_file = False
@@ -133,7 +133,7 @@ while True:
         addr = socket.getaddrinfo(HOST, PORT)[0][-1]
         s = socket.socket()
         s.connect(addr)
-        print("Connected to server")
+        print("Connected to server ", HOST)
 
         while True:
             command = s.recv(1024).decode().strip()

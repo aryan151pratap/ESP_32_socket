@@ -1,12 +1,14 @@
 const net = require('net');
 const WebSocket = require('ws');
 
-const wss = new WebSocket.Server({ port: 8081 });
+let tcpSocket = null;
+
+const wss = new WebSocket.Server({ port: process.env.PORT || 8081 });
 
 wss.on('connection', (ws) => {
     console.log('React frontend connected');
 
-	ws.on('message', (message) => {
+    ws.on('message', (message) => {
         console.log('Received command from frontend:', message);
 
         if (tcpSocket && tcpSocket.writable) {
@@ -22,10 +24,9 @@ wss.on('connection', (ws) => {
     });
 });
 
-
 const tcpServer = net.createServer((socket) => {
     console.log('ESP32 connected');
-	tcpSocket = socket;
+    tcpSocket = socket;
 
     socket.on('data', (data) => {
         console.log('Received from ESP32:', data);
@@ -42,6 +43,6 @@ const tcpServer = net.createServer((socket) => {
     socket.on('error', (err) => console.log('Error:', err));
 });
 
-tcpServer.listen(8080, '0.0.0.0', () => {
-    console.log('Node.js TCP server is running on port 8080');
+tcpServer.listen(process.env.TCP_PORT || 8080, '0.0.0.0', () => {
+    console.log(`Node.js TCP server is running on port ${process.env.TCP_PORT || 8080}`);
 });

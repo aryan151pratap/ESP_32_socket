@@ -17,7 +17,7 @@ function Dashboard() {
 	const connectSocket = () => {
 	  if (socketRef.current) return;
 
-	  socketRef.current = new WebSocket("ws://192.168.244.50:8081");
+	  socketRef.current = new WebSocket("wss://esp-32-socket.onrender.com/");
 
 	  socketRef.current.onopen = () => console.log("Connected to WebSocket server");
 
@@ -38,7 +38,9 @@ function Dashboard() {
 	  socketRef.current.onclose = () => {
 		console.log("WebSocket disconnected, reconnecting...");
 		socketRef.current = null;
-		setTimeout(connectSocket, 3000);
+		setTimeout(() => {
+			if (!socketRef.current) connectSocket(); 
+		}, 3000);
 	  };
 	};
 
@@ -50,7 +52,9 @@ function Dashboard() {
   const sendCommand = (command) => {
 	if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
 	  socketRef.current.send(command);
-	}
+	} else {
+		console.log("WebSocket is not ready yet");
+	  }
   };
 
   return (
