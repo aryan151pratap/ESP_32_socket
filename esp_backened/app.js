@@ -8,7 +8,7 @@ const wss = new WebSocket.Server({ port: process.env.PORT || 8081 });
 wss.on('connection', (ws) => {
     console.log('React frontend connected');
 
-    ws.on('message', (message) => {
+	ws.on('message', (message) => {
         console.log('Received command from frontend:', message);
 
         if (tcpSocket && tcpSocket.writable) {
@@ -24,9 +24,10 @@ wss.on('connection', (ws) => {
     });
 });
 
+
 const tcpServer = net.createServer((socket) => {
     console.log('ESP32 connected');
-    tcpSocket = socket;
+	tcpSocket = socket;
 
     socket.on('data', (data) => {
         console.log('Received from ESP32:', data);
