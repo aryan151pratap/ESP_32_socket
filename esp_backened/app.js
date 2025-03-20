@@ -3,8 +3,8 @@ const WebSocket = require('ws');
 
 let tcpSocket = null;
 
-const WS_PORT = process.env.PORT || 8081;
-const TCP_PORT = process.env.TCP_PORT || 8080;
+const WS_PORT = process.env.PORT || 4000;
+const TCP_PORT = process.env.TCP_PORT || 9000;
 
 const wss = new WebSocket.Server({ port: WS_PORT });
 

@@ -21,7 +21,7 @@ function Dashboard() {
 	const connectSocket = () => {
 	  if (socketRef.current) return;
 
-	  socketRef.current = new WebSocket("ws://192.168.222.50:8081");
+	  socketRef.current = new WebSocket("ws://localhost:4000");
 
 	  socketRef.current.onopen = () => console.log("Connected to WebSocket server");
 
