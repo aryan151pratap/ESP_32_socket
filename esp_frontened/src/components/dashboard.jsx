@@ -2,13 +2,17 @@ import { useEffect, useState, useRef } from "react";
 import File from "./file";
 import Cmd from "./cmd";
 import Leftbar from './leftbar'
+import WebcamComponent from "./camera";
 
 function Dashboard() {
   const [sensorData, setSensorData] = useState("");
   const [command, setCommand] = useState("");
   const [file_data, setFile_data] = useState("");
   const [activeFile, setActiveFile] = useState("");
-
+  const [cam, setcam] = useState(false);
+  const [connection_esp32, setConnection_esp32] = useState("Unable to connect . . .");
+  const [connection_server, setConnection_server] = useState("Unable to connect . . .");
+ 
   const socketRef = useRef(null);
 
   
@@ -17,7 +21,7 @@ function Dashboard() {
 	const connectSocket = () => {
 	  if (socketRef.current) return;
 
-	  socketRef.current = new WebSocket("wss://esp-32-socket.onrender.com/");
+	  socketRef.current = new WebSocket("ws://192.168.222.50:8081");
 
 	  socketRef.current.onopen = () => console.log("Connected to WebSocket server");
 
@@ -29,7 +33,11 @@ function Dashboard() {
 		} else if(data.startsWith("LIVE:")) {
 			setSensorData(data.slice(5));
 		} else if(data.startsWith("FILE:")) {
-			setFile_data(data.slice(5));
+			setFile_data(data.slice(5)); //
+		} else if(data.startsWith("CONNECT_ESP32:")) {
+			setConnection_esp32(data.slice(14));
+		} else if(data.startsWith("CONNECT_SERVER:")) {
+			setConnection_server(data.slice(15));
 		}
 	  };
 
@@ -38,9 +46,7 @@ function Dashboard() {
 	  socketRef.current.onclose = () => {
 		console.log("WebSocket disconnected, reconnecting...");
 		socketRef.current = null;
-		setTimeout(() => {
-			if (!socketRef.current) connectSocket(); 
-		}, 3000);
+		setTimeout(connectSocket, 3000);
 	  };
 	};
 
@@ -52,22 +58,32 @@ function Dashboard() {
   const sendCommand = (command) => {
 	if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
 	  socketRef.current.send(command);
-	} else {
-		console.log("WebSocket is not ready yet");
-	  }
+	}
   };
 
   return (
+	<>
 	<div className="w-full h-screen bg-zinc-700 flex flex-row text-zinc-200">
-		<Leftbar sendCommand={sendCommand} setActiveFile={setActiveFile}/>
+		<Leftbar sendCommand={sendCommand} setActiveFile={setActiveFile}
+		connection_esp32={connection_esp32} connection_server={connection_server}/>
 		<div className="h-full w-full flex flex-col md:flex-row">
-			<div className="w-full flex-grow">
-				<File sendCommand={sendCommand} file_data={file_data} setFile_data={setFile_data} activeFile={activeFile} setActiveFile={setActiveFile}/>
+			<div className="w-full h-full flex-grow">
+				<div className="w-full h-full flex flex-col md:flex-col sm:flex-row">
+					<div className="w-full h-full">
+						<File sendCommand={sendCommand} file_data={file_data} setFile_data={setFile_data} activeFile={activeFile} setActiveFile={setActiveFile}/>
+					</div>
+					{ cam &&
+					<div className="w-full h-full flex bg-zinc-800">
+						<WebcamComponent/>
+					</div>}
+				</div>
 			</div>
 			<Cmd sendCommand={sendCommand} command={command} setCommand={setCommand}
-			 sensorData={sensorData} setSensorData={setSensorData}/>
+			 sensorData={sensorData} setSensorData={setSensorData} setcam={setcam} cam={cam}/>
 		</div>
+		
 	</div>
+	</>
   );
 }
 

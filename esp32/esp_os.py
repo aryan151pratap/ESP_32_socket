@@ -25,7 +25,7 @@ for i in range(3):
 
 print("Connected to Wi-Fi:", wifi.ifconfig())
 
-HOST = "esp-32-socket.onrender.com"
+HOST = "192.168.222.50"
 PORT = 8080
 
 current_file = False
@@ -81,7 +81,7 @@ def listen_for_commands():
 
     while socket_thread_running:
         try:
-            command = s.recv(1024).decode().strip()
+            command = s.recv(2048).decode().strip()
             if command:
                 if command == "stop":
                     reset()
@@ -133,10 +133,10 @@ while True:
         addr = socket.getaddrinfo(HOST, PORT)[0][-1]
         s = socket.socket()
         s.connect(addr)
-        print("Connected to server ", HOST)
+        print("Connected to server")
 
         while True:
-            command = s.recv(1024).decode().strip()
+            command = s.recv(2048).decode().strip()
             if not command:
                 continue
 

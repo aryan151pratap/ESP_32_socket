@@ -20,6 +20,7 @@ function Output({ sendCommand, sensorData, setSensorData }){
 	}, [sensorData, setSensorData]);
 
 	const handle_Stop = function(){
+		setOutputshow([]);
 		sendCommand("stop");
 	}
 
@@ -30,8 +31,8 @@ function Output({ sendCommand, sensorData, setSensorData }){
 			{outputshow.length !== 0 ?
 			<div className="w-full h-full flex flex-col">
 				<div ref={scrollRef} className="flex-grow w-full h-full px-2 text-zinc-900 overflow-y-auto">
-					{outputshow.map((cmd, index) => (
-						<p key={index}>{cmd}</p>
+					{outputshow.map((output, index) => (
+						<p key={index}>{output}</p>
 					))}
 				</div>
 				<div className="flex justify-between">

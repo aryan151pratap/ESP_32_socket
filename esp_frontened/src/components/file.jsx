@@ -66,7 +66,7 @@ const File = ({ sendCommand, file_data, setFile_data, activeFile, setActiveFile 
   };
 
   const handle_run = function(){
-	sendCommand("RUN:"+input);
+	  sendCommand("RUN:"+input);
   }
 
   return (
@@ -98,15 +98,12 @@ const File = ({ sendCommand, file_data, setFile_data, activeFile, setActiveFile 
 			placeholder="Enter text here . . . ."
 			onKeyDown={handleTab}
 			></textarea>
-			<button id="runButton" className="absolute top-2 right-2 bg-green-500 text-white px-3 py-1 rounded hidden"
+			<button id="runButton" className="absolute top-2 right-5 bg-green-500 text-white px-3 py-1 rounded hidden"
 			onClick={handle_run}
 			>
 				Run
 			</button>
 		</div>
-
-
-      
     </div>
   );
 };

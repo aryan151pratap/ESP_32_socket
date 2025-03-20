@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import Output from "./output";
 
-function Cmd({ sendCommand, command, setCommand, sensorData, setSensorData }) {
+function Cmd({ sendCommand, command, setCommand, sensorData, setSensorData, setcam, cam }) {
 	const [terminal, setTerminal] = useState(true);
 	const [output, setOutput] = useState(true);
 
@@ -34,10 +34,15 @@ function Cmd({ sendCommand, command, setCommand, sensorData, setSensorData }) {
 
 	return (
 		<div className="w-full md:h-full flex flex-col bg-zinc-700 text-white">
-			<div className="w-full flex flex-row gap-1">
+			<div className="w-full p-[1px] flex flex-row gap-1">
 				<button className={`px-2 ${!terminal ? "bg-zinc-600" : "bg-zinc-800"}`} onClick={() => setTerminal(!terminal)}>Terminal</button>
 				<button className={`px-2 ${!output ? "bg-zinc-600" : "bg-zinc-800"}`} 
 				onClick={() => setOutput(!output)}>Output</button>
+				<button className={`px-2 ${!cam ? "bg-zinc-600" : "bg-zinc-800"}`} 
+					onClick={() => setcam(!cam)}>
+						webcam
+				</button>
+
 			</div>
 			<div className="flex w-full h-full md:flex-col">
 			{terminal && 
@@ -65,7 +70,7 @@ function Cmd({ sendCommand, command, setCommand, sensorData, setSensorData }) {
 			</div>
 			}
 			{output && 
-			<div className="w-full h-[300px] md:h-[300px] flex">
+			<div className={`w-full h-[300px] ${terminal ? "md:h-[300px]" : "md:h-full"} flex`}>
 				<Output sendCommand={sendCommand} sensorData={sensorData} setSensorData={setSensorData}/>
 			</div>
 			}
