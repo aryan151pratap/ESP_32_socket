@@ -2,12 +2,17 @@ const net = require('net');
 const axios = require('axios');
 const WebSocket = require('ws');
 
+const http = require('http');
+const app = express();
+const server = http.createServer(app);
+
 let tcpSocket = null;
 
 const WS_PORT = process.env.PORT || 4000;
 const TCP_PORT = process.env.TCP_PORT || 8080;
 
-const wss = new WebSocket.Server({ port: WS_PORT });
+// const wss = new WebSocket.Server({ port: WS_PORT });
+const wss = new WebSocket.Server({ server });
 
 const API_KEY = "AIzaSyDtGit2qq25qrQ5bSvXQ0Xd_EoGniHnAcU";
 const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
