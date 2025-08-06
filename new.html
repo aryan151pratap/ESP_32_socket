@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+	<div>
+		<img id="img" src="esp_frontened\src\image\folder (1).png" alt="">
+	</div>
+	<script>
+		var a = ["esp_frontened/src/image/folder (1).png",
+		"esp_frontened/src/image/delete-file (1).png",
+		"esp_frontened/src/image/delete-file.png",
+		"esp_frontened/src/image/folder.png"]
+
+		const img = document.getElementById("img");
+		let i = 0;
+		console.log(a[i]);
+
+		const b = setInterval(() => {
+			img.setAttribute("src", a[i]);
+			i++;
+			i = i%4;
+		}, 1000);
+
+		setTimeout(() => {
+			clearInterval(b);
+		}, 5000);
+
+	</script>
+</body>
+</html>

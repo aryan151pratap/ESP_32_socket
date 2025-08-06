@@ -1,12 +1,16 @@
 const net = require('net');
+const axios = require('axios');
 const WebSocket = require('ws');
 
 let tcpSocket = null;
 
 const WS_PORT = process.env.PORT || 4000;
-const TCP_PORT = process.env.TCP_PORT || 9000;
+const TCP_PORT = process.env.TCP_PORT || 8080;
 
 const wss = new WebSocket.Server({ port: WS_PORT });
+
+const API_KEY = "AIzaSyDtGit2qq25qrQ5bSvXQ0Xd_EoGniHnAcU";
+const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
 wss.on('connection', (ws) => {
     console.log('React frontend connected');
@@ -16,14 +20,29 @@ wss.on('connection', (ws) => {
         }
     });
 
-    ws.on('message', (message) => {
-        console.log('Received command from frontend:', message);
-
-        if (tcpSocket && tcpSocket.writable) {
-            console.log('Sending command to ESP32:', message);
-            tcpSocket.write(message);
+    ws.on('message', async  (message) => {
+        console.log('Received command from frontend:', message, message.toString());
+        if (message.toString().split(":")[0] === 'API_REQUEST') {
+            const data = message.toString().split(":")[1];
+            try {
+                const response = await axios.post(URL, {
+                    contents: [{ parts: [{ text: data }] }]
+                });
+                const apiResponse = response.data.candidates[0].content.parts[0].text;
+                console.log(apiResponse);
+                ws.send("API_RESPONSE:"+apiResponse);
+            } catch (error) {
+                console.log('Error during API request:', error.message);
+                ws.send('API_RESPONSE: Error occurred during API request');
+            }
         } else {
-            console.log('No ESP32 connection available to forward the command');
+            if (tcpSocket && tcpSocket.writable) {
+                console.log('Sending command to ESP32:', message);
+                tcpSocket.write(message);
+            } else {
+                console.log('No ESP32 connection available to forward the command');
+                ws.send('COMMAND:Error: No ESP32 connection available');
+            }
         }
     });
 

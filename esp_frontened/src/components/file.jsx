@@ -1,109 +1,148 @@
 import { useState, useEffect } from "react";
+import { X, Play, Save } from "lucide-react";
+// import CodeMirror from "@uiw/react-codemirror";
+// import { python } from "@codemirror/lang-python";
+// import { dracula } from "@uiw/codemirror-theme-dracula";
+import Editor from '@monaco-editor/react';
 
-const File = ({ sendCommand, file_data, setFile_data, activeFile, setActiveFile }) => {
+
+const File = ({ sendCommand, file_data, setFile_data, activeFile, setActiveFile, color, setcurrent_file_data }) => {
   const [input, setInput] = useState("");
+  const [openSaveModal, setOpenSaveModal] = useState(false);
+  const [filename, setFilename] = useState("");
+  const [save, setsave] = useState(false);
 
-  useEffect(() => {
+  useEffect(() => { 
     if (file_data !== "") {
       setInput(file_data);
-      setFile_data(""); 
+      setFile_data("");
     }
-
-	const button = document.getElementById("runButton");
-    if (input.trim() === "") {
-      button.classList.add("hidden");
-    } else {
-      button.classList.remove("hidden");
+    if(filename !== "" && save){
+      handleSave();
+      setFilename("");
+      setsave(false);
     }
+    if(input !== ""){
+      setcurrent_file_data(input);
+    }
+  }, [file_data, setFile_data, filename, setFilename, save, setsave, input, setcurrent_file_data]);
 
-  }, [file_data, setFile_data, input]);
-
-  
   const handleTab = (e) => {
-	  if (e.key === "Tab") {
-		  e.preventDefault();
-		  const cursorPos = e.target.selectionStart;
-		  const textBefore = input.substring(0, cursorPos);
-		  const textAfter = input.substring(cursorPos);
-		  setInput(textBefore + "\t" + textAfter);
-		  
-		  setTimeout(() => {
-			  e.target.selectionStart = e.target.selectionEnd = cursorPos + 1;
-			}, 0);
-		}
-	};
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const cursorPos = e.target.selectionStart;
+      const textBefore = input.substring(0, cursorPos);
+      const textAfter = input.substring(cursorPos);
+      setInput(textBefore + "    " + textAfter);
 
-	const escapePythonCode = (text) => {
-	  return text
-		.replace(/\\/g, '\\\\')      
-		.replace(/'/g, "\\'")       
-		.replace(/"/g, '\\"') 
-		.replace(/\n/g, '\\n')
-		.replace(/\r/g, '\\r')
-		.replace(/\t/g, '\\t') 
-		.replace(/("""|''')/g, '\\$1');
-	};
-
-  const handle_Save = () => {
-    if (activeFile !== "" && input !== "") {
-      const escapedInput = escapePythonCode(input);
-      const data = `with open('${activeFile}', 'w') as file:\n    file.write("""${escapedInput}""")`;
-
-      try {
-        sendCommand(data);
-        alert("File saved successfully!");
-      } catch (error) {
-        alert("Error saving file: " + error.message);
-      }
-    } else {
-      alert("Please enter some text before saving.");
+      setTimeout(() => {
+        e.target.selectionStart = e.target.selectionEnd = cursorPos + 4;
+      }, 0);
     }
   };
 
-  const handle_close = () => {
+  const handleSave = () => {
+    if (activeFile !== "" && input !== "") {
+      const data = `with open('${activeFile}', 'w') as file:\n    file.write("""${input}""")`;
+      sendCommand(data);
+      setOpenSaveModal(false);
+    } else {
+      setOpenSaveModal(true);
+    }
+  };
+
+  const handleRun = () => {
+    sendCommand("RUN:" + input);
+  };
+
+  const give_to_save = function(){
+    setActiveFile(filename);
+    setsave(true);
+    setOpenSaveModal(false);
+  }
+
+  const close = function(){
     setActiveFile("");
     setInput("");
-  };
-
-  const handle_run = function(){
-	  sendCommand("RUN:"+input);
   }
 
   return (
-    <div className="w-full h-full flex flex-col gap-1 bg-zinc-800/70 overflow-x-auto">
-      <div className="w-full flex gap-1 bg-zinc-800/70 text-zinc-200 font-thin">
+    <div className={`w-full h-full flex flex-col bg-slate-400 shadow-lg overflow-hidden`}>
+      {/* Top Bar */}
+      <div className={`w-full flex items-center justify-between bg-${color}-800 p-[1px] text-white text-sm`}>
         {activeFile && (
-          <>
-            <div className="flex items-center px-2 py-[2px] text-sm bg-zinc-900">
-              <button className="hover:underline">{activeFile.split("/").pop()}</button>
-              <button className="ml-2 text-red-400 hover:text-red-600" onClick={handle_close}>
-                ✕
-              </button>
-            </div>
-            <div className="ml-auto">
-              <button className="bg-zinc-700 px-4" onClick={handle_Save}>
-                Save
-              </button>
-            </div>
-          </>
+          <div className="flex items-center gap-2">
+            <span className={`font-mono text-${color}-300`}>{activeFile.split("/").pop()}</span>
+            <button className="text-red-500 hover:text-red-400" onClick={close}>✕</button>
+          </div>
         )}
+        {input != "" &&
+        <div className="w-full flex gap-[1px] justify-end">
+          <button className={`flex items-center gap-[1px] bg-${color}-600 px-4 py-[1px] hover:bg-${color}-700`} onClick={handleRun}>
+            <Play size={16} /> Run
+          </button>
+          <button className={`flex items-center gap-[1px] bg-${color}-600 px-4 py-[1px] hover:bg-${color}-700`} onClick={handleSave}>
+            <Save size={16} /> Save
+          </button>
+        </div>
+        }
+      </div>
+      
+      {/* Code Editor */}
+      <div className="h-full w-full flex bg-zinc-900/95">
+        {/* <CodeMirror
+          height="200px"
+          style={{ width: "100%", maxWidth: "600px" }} 
+          value={input}
+          extensions={[python()]}
+          theme={dracula}
+          onChange={(value) => setInput(value)}
+          onKeyDown={handleTab}
+          className="flex overflow-auto"
+        /> */}
+        <Editor
+          height="98%"
+          language="python"
+          value={input}
+          onChange={(value) => setInput(value)}
+          theme={'vs-dark'}
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            tabSize: 2,
+          }}
+        />
       </div>
 
-	  <div className="relative w-full h-full flex">
-		<textarea
-			className="w-full h-full bg-zinc-900 resize-none outline-none text-white p-4 font-thin tracking-wide"
-			spellCheck={false}
-			value={input}
-			onChange={(e) => setInput(e.target.value)}
-			placeholder="Enter text here . . . ."
-			onKeyDown={handleTab}
-			></textarea>
-			<button id="runButton" className="absolute top-2 right-5 bg-green-500 text-white px-3 py-1 rounded hidden"
-			onClick={handle_run}
-			>
-				Run
-			</button>
-		</div>
+
+      {/* Save File Modal */}
+      {openSaveModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-1/3">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-white text-lg">Save File</h2>
+              <button className="text-gray-400 hover:text-gray-200" onClick={() => setOpenSaveModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <input
+              type="text"
+              value={filename}
+              onChange={(e) => setFilename(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 text-white rounded outline-none"
+              placeholder="Enter filename"
+            />
+            <button
+              className="mt-4 w-full bg-blue-600 py-2 rounded hover:bg-blue-700"
+              onClick={give_to_save}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

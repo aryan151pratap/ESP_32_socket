@@ -9,18 +9,8 @@ import get_wifi as gw
 SSID = "Galaxy F12 D5ED"
 PASSWORD = "12345678"
 
-HOST = "192.168.27.50"
-PORT = 8080
-
 data = gw.wf('all_wifi.txt')
 l = data[0].split(',')
-print(l)
-# h = data[1]
-# print(h)
-
-# if len(h) != 0:
-#     HOST = h
-
 if len(l) != 0:
     SSID = l[0]
     PASSWORD = l[1]
@@ -45,6 +35,8 @@ for i in range(3):
 
 print("Connected to Wi-Fi:", wifi.ifconfig())
 
+HOST = "192.168.225.50"
+PORT = 8080
 
 current_file = False
 running_thread = None  
