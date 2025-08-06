@@ -29,7 +29,7 @@ function Dashboard() {
 		const connectSocket = () => {
 			if (socketRef.current) return;
 			
-			socketRef.current = new WebSocket(`ws://${ip}`);
+			socketRef.current = new WebSocket(`wss://${ip}`);
 			
 			socketRef.current.onopen = () => console.log("Connected to WebSocket server");
 			
