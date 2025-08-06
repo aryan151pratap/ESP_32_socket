@@ -1,19 +1,13 @@
-const express = require('express');
 const net = require('net');
 const axios = require('axios');
 const WebSocket = require('ws');
-
-const http = require('http');
-const app = express();
-const server = http.createServer(app);
 
 let tcpSocket = null;
 
 const WS_PORT = process.env.PORT || 4000;
 const TCP_PORT = process.env.TCP_PORT || 8080;
 
-// const wss = new WebSocket.Server({ port: WS_PORT });
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ port: WS_PORT });
 
 const API_KEY = "AIzaSyDtGit2qq25qrQ5bSvXQ0Xd_EoGniHnAcU";
 const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
@@ -26,8 +20,8 @@ wss.on('connection', (ws) => {
         }
     });
 
-    ws.on('message', async  (message) => {
-        console.log('Received command from frontend:', message, message.toString());
+    ws.on('message', async (message) => {
+        console.log('Received command from frontend:', message.toString());
         if (message.toString().split(":")[0] === 'API_REQUEST') {
             const data = message.toString().split(":")[1];
             try {
@@ -35,8 +29,7 @@ wss.on('connection', (ws) => {
                     contents: [{ parts: [{ text: data }] }]
                 });
                 const apiResponse = response.data.candidates[0].content.parts[0].text;
-                console.log(apiResponse);
-                ws.send("API_RESPONSE:"+apiResponse);
+                ws.send("API_RESPONSE:" + apiResponse);
             } catch (error) {
                 console.log('Error during API request:', error.message);
                 ws.send('API_RESPONSE: Error occurred during API request');
@@ -44,7 +37,7 @@ wss.on('connection', (ws) => {
         } else {
             if (tcpSocket && tcpSocket.writable) {
                 console.log('Sending command to ESP32:', message);
-                tcpSocket.write(message);
+                tcpSocket.write(message.toString());
             } else {
                 console.log('No ESP32 connection available to forward the command');
                 ws.send('COMMAND:Error: No ESP32 connection available');
@@ -64,12 +57,12 @@ wss.on('connection', (ws) => {
 
 const tcpServer = net.createServer((socket) => {
     console.log('ESP32 connected');
+    tcpSocket = socket;
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
             client.send('CONNECT_ESP32:connected . . .');
         }
     });
-    tcpSocket = socket;
 
     socket.on('data', (data) => {
         wss.clients.forEach(client => {
@@ -80,17 +73,21 @@ const tcpServer = net.createServer((socket) => {
     });
 
     socket.on('end', () => {
+        console.log('ESP32 disconnected');
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send('CONNECT_ESP32:disconnected . . .');
             }
         });
-        console.log('ESP32 disconnected');
+        tcpSocket = null;
     });
 
-    socket.on('error', (err) => console.log('Error:', err));
+    socket.on('error', (err) => {
+        console.log('ESP32 socket error:', err.message);
+        tcpSocket = null;
+    });
 });
 
 tcpServer.listen(TCP_PORT, '0.0.0.0', () => {
-    console.log(`Node.js TCP server is running on port ${TCP_PORT}`);
+    console.log(`Node.js TCP server running on port ${TCP_PORT}`);
 });
